@@ -1,5 +1,8 @@
 import {
   keccak256,
+  encodeFunctionData,
+  decodeEventLog,
+  erc20Abi,
   type Hex,
   type LocalAccount,
   type PublicClient,
@@ -11,6 +14,7 @@ export interface TransferEvidence {
   recipientAddress: string;
   amountRaw: bigint;
   evmNonce: bigint | null;
+  tokenAddress?: Hex;
 }
 export async function nativeTransferStatus(
   client: PublicClient,
@@ -36,13 +40,42 @@ export async function nativeTransferStatus(
       block.hash !== receipt.blockHash ||
       transaction.blockHash !== receipt.blockHash ||
       transaction.from.toLowerCase() !== op.senderAddress ||
-      transaction.to?.toLowerCase() !== op.recipientAddress.toLowerCase() ||
-      transaction.value !== op.amountRaw ||
+      transaction.to?.toLowerCase() !==
+        (op.tokenAddress ?? op.recipientAddress).toLowerCase() ||
+      transaction.value !== (op.tokenAddress ? 0n : op.amountRaw) ||
       BigInt(transaction.nonce) !== op.evmNonce ||
-      transaction.input !== '0x'
+      transaction.input.toLowerCase() !== transferData(op).toLowerCase()
     )
       throw new Error('MON_RECEIPT_MISMATCH');
-    if (receipt.status === 'success') return 'FINALIZED';
+    if (receipt.status === 'success') {
+      if (op.tokenAddress) {
+        let transferred = 0n;
+        for (const log of receipt.logs) {
+          if (log.address.toLowerCase() !== op.tokenAddress.toLowerCase())
+            continue;
+          try {
+            const event = decodeEventLog({
+              abi: erc20Abi,
+              eventName: 'Transfer',
+              data: log.data,
+              topics: log.topics,
+            });
+            if (event.args.from.toLowerCase() !== op.senderAddress) continue;
+            if (
+              event.args.to.toLowerCase() !== op.recipientAddress.toLowerCase()
+            )
+              throw new Error('MON_RECEIPT_MISMATCH');
+            transferred += event.args.value;
+          } catch (error) {
+            if ((error as Error).message === 'MON_RECEIPT_MISMATCH')
+              throw error;
+          }
+        }
+        if (transferred !== op.amountRaw)
+          throw new Error('MON_RECEIPT_MISMATCH');
+      }
+      return 'FINALIZED';
+    }
     if (receipt.status === 'reverted') return 'FAILED';
     // A malformed RPC status must never release funds for another attempt.
     return 'PENDING';
@@ -51,6 +84,17 @@ export async function nativeTransferStatus(
     if ((error as Error).message === 'MON_RECEIPT_MISMATCH') throw error;
     return 'PENDING';
   }
+}
+export function transferData(
+  op: Pick<TransferEvidence, 'tokenAddress' | 'recipientAddress' | 'amountRaw'>,
+): Hex {
+  return op.tokenAddress
+    ? encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: [op.recipientAddress as Hex, op.amountRaw],
+      })
+    : '0x';
 }
 export function verifySignedTransfer(raw: Hex, hash: string) {
   if (keccak256(raw) !== hash) throw new Error('MON_TRANSACTION_CHANGED');
@@ -67,6 +111,7 @@ export async function signNativeTransfer(
     gas: bigint;
     maxFeePerGas: bigint;
     maxPriorityFeePerGas: bigint;
+    data?: Hex;
   },
 ) {
   if (![143, 10143].includes(transaction.chainId))
