@@ -1,0 +1,13 @@
+name: hodlerstation-monad-events
+description: Existing Chogaton trades used as HodlerStation mission evidence
+handlers: src
+contracts:
+  - name: ChogWearables
+    events:
+      - event: 'Trade(address indexed account, uint256 indexed id, bool buy, uint256 quantity, uint256 amount, uint256 total)'
+chains:
+  - id: 143
+    start_block: 111647728
+    contracts:
+      - name: ChogWearables
+        address: '0x43dD6Ba111b09e2ee318666B82eA279Dd290BA89'

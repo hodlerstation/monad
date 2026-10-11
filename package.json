@@ -1,0 +1,19 @@
+{
+  "name": "hodlerstation-monad-events",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "codegen": "envio codegen",
+    "dev": "envio dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "envio": "3.14.0"
+  },
+  "devDependencies": {
+    "@foundry-rs/anvil": "1.7.1",
+    "@types/node": "22.19.7",
+    "solc": "0.8.37",
+    "typescript": "5.9.3"
+  }
+}
