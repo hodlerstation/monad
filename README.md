@@ -56,4 +56,6 @@ The hosted indexer now contains the real CHOG Trade event, and the live mission 
 
 Dynamic real-wallet Sandbox authentication and message signing were checked separately. This production payout does not establish a new Dynamic login in that same session. Public CHOG reward payout is not claimed. The application uses its existing private mission and accounting services; this repository exposes the chain-specific integration, not production user data or keys.
 
-The previously observed duplicate reward summary and wrong explorer label have a frontend fix in PR195 awaiting the operator deployment flow.
+The reward display and Monad explorer link were checked on the deployed product. Post-deployment checks passed 14 live API/network-visibility cases and 9 local-verifier cases against public Monad RPC and the hosted Envio indexer. Concurrent repeat claims retained one finalized 0.0001 MON payout. This recheck reused the completed mission; it did not create another payout.
+
+Real MetaMask checks also verified message signing, BSC-to-Monad network switching, persistence after reload, and user-rejected signing. Dynamic connect-only mode is independent of the host login. Account linking and public CHOG reward payouts are not claimed.
