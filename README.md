@@ -44,6 +44,16 @@ Chog administrator address `0x8c4c0E65A479629311AaF3a0398Afa9A8aB50f70` is also 
 
 The Chog ERC-20 market and MON native rewards are distinct assets. The shared transfer module supports exact ERC-20 calldata and finalized Transfer-log verification. The host selects the fixed mainnet CHOG contract, keeps asset budgets separate, and reserves MON for gas; CHOG is not enabled on testnet without an independently configured contract.
 
-## Evidence limits
+## Verified mainnet evidence
 
-Local successful tests are not public-chain payment proof. Hosted Envio was reachable but had zero indexed Trade events at the last check. A positive public event and actual public MON payout remain unverified. No private key, private product implementation or production user data is needed in this repository.
+The hosted indexer now contains the real CHOG Trade event, and the live mission completed a native MON payout.
+
+- [Product](https://app.hodlerstation.xyz) and [verified mission](https://app.hodlerstation.xyz/missions/cmv4wq07u054211aojvtsdwpc).
+- [CHOG purchase](https://monadscan.com/tx/0xad512008b8e9b8d6c7c96c809fe3e6f047382caacd6fc58d9129743357ffbc44).
+- [0.0001 MON payout](https://monadscan.com/tx/0x356aea77316864a4ce58c2ea665d6530188c7f22e93a9f0a7a707dbddce0c293), successful receipt on chain143, exact recipient balance increase, one finalized payout after concurrent repeat claims.
+- [Public evidence](submission/evidence.json) includes the actual indexed event.
+- [Submission answers and judge instructions](submission/fields.json).
+
+Dynamic real-wallet Sandbox authentication and message signing were checked separately. This production payout does not establish a new Dynamic login in that same session. Public CHOG reward payout is not claimed. The application uses its existing private mission and accounting services; this repository exposes the chain-specific integration, not production user data or keys.
+
+The previously observed duplicate reward summary and wrong explorer label have a frontend fix in PR195 awaiting the operator deployment flow.

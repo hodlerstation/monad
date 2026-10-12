@@ -1,0 +1,49 @@
+{
+  "chainId": 143,
+  "trade": {
+    "hash": "0xad512008b8e9b8d6c7c96c809fe3e6f047382caacd6fc58d9129743357ffbc44",
+    "explorer": "https://monadscan.com/tx/0xad512008b8e9b8d6c7c96c809fe3e6f047382caacd6fc58d9129743357ffbc44"
+  },
+  "payout": {
+    "hash": "0x356aea77316864a4ce58c2ea665d6530188c7f22e93a9f0a7a707dbddce0c293",
+    "status": "success",
+    "blockNumber": "112721425",
+    "from": "0x8c4c0e65a479629311aaf3a0398afa9a8ab50f70",
+    "to": "0x84e9e8d57cb6f2be7b670969644a11afa173d21d",
+    "value": "100000000000000",
+    "chainId": 143
+  },
+  "indexer": {
+    "endpoint": "https://indexer.dev.hyperindex.xyz/c38228b/v1/graphql",
+    "event": {
+      "id": "143_0xad512008b8e9b8d6c7c96c809fe3e6f047382caacd6fc58d9129743357ffbc44_152",
+      "chainId": 143,
+      "contract": "0x43dd6ba111b09e2ee318666b82ea279dd290ba89",
+      "transactionHash": "0xad512008b8e9b8d6c7c96c809fe3e6f047382caacd6fc58d9129743357ffbc44",
+      "blockHash": "0x5f36bf8ed3ec3d7697b8843a907d5070b942dbf0c1aae6fc5963570688a3c21d",
+      "blockNumber": "112690913",
+      "logIndex": 152,
+      "account": "0x84e9e8d57cb6f2be7b670969644a11afa173d21d",
+      "tokenId": "58467384054613712085777735261854442272526024401823940085556256064986666423864",
+      "buy": true,
+      "quantity": "1"
+    }
+  },
+  "verified": {
+    "fakeHashRejected": true,
+    "monadOnlyListing": true,
+    "exactBalanceIncreaseMON": "0.0001",
+    "finalizedPayoutCount": 1,
+    "missionStatus": "COMPLETED",
+    "concurrentRepeatClaim": "idempotent result or lock busy; no additional payout"
+  },
+  "dynamic": {
+    "mode": "Sandbox",
+    "realExternalWalletAuthAndMessageSignature": true,
+    "productionPayoutSessionLoginReverified": false
+  },
+  "notClaimed": [
+    "Public CHOG reward payout",
+    "Public access to private host product code"
+  ]
+}
