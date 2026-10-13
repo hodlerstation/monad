@@ -1,0 +1,8 @@
+{
+  "signature": "0x356aea77316864a4ce58c2ea665d6530188c7f22e93a9f0a7a707dbddce0c293",
+  "chainId": 143,
+  "senderAddress": "0x8c4c0e65a479629311aaf3a0398afa9a8ab50f70",
+  "recipientAddress": "0x84e9e8d57cb6f2be7b670969644a11afa173d21d",
+  "amountRaw": "100000000000000",
+  "evmNonce": "2"
+}

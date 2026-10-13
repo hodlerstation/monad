@@ -9,6 +9,7 @@ This repository owns the portable Monad integration source. The existing product
 - `modules/native-transfer.ts`: Monad native/ERC-20 transfer signing, persisted-byte verification and canonical finalized receipt verification. A submitted hash is never sufficient proof of payment.
 - `modules/mission-event-source.ts`: replaceable indexer interface. The host must establish canonical evidence before querying an indexer.
 - `modules/envio-mission-event-source.ts`: GraphQL evidence matching; unavailable indexing never authorizes a claim.
+- `modules/hypersync-reward-evidence.ts`: independent indexed evidence for direct native MON and CHOG ERC-20 reward transfers on Monad mainnet. This does not require a CHOG purchase.
 - `config.yaml`, `schema.graphql`, `src/`: deployable Envio indexer for the existing Chog Trade event.
 
 ## Consumption without exposing private application code
@@ -37,6 +38,18 @@ Connect this repository, root `.`, config `config.yaml`, branch `master`. The in
 At repository root, use `npm ci`, `npm run codegen`, `npm run typecheck`, `npm run dev` on Linux with Docker. Envio Cloud manages its HyperSync connection. Keep secrets outside Git.
 
 ## Claim and signing boundary
+
+### Reward evidence without a purchase
+
+The optional CHOG purchase mission uses HyperIndex `Trade` events. General missions can instead retain the host's existing eligibility rules and pay MON or CHOG. The new reward-evidence module queries HyperSync's JSON API for the exact payout block: native MON uses transaction value; CHOG uses the fixed token's `Transfer` logs and exact transfer calldata. It checks the recipient, amount in raw units, sender, nonce, successful transaction and canonical block hash. Duplicate or inconsistent evidence is rejected; lag and outages never become verification success.
+
+The host integration exposes an authenticated, read-only `GET /users/me/missions/:missionId/reward-evidence`. It resolves the caller's finalized payout from the database, checks canonical RPC finality, then queries HyperSync. A received MON/CHOG reward has a **Verify with Envio** action showing the indexed result, recipient, exact amount and explorer link. This is reward-transfer verification, not a new indexer for off-chain task completion. Existing claims and recovery do not depend on the availability of this supplementary evidence view.
+
+Server configuration requires `ENVIO_HYPERSYNC_TOKEN`, a HyperSync API token kept outside Git. This is separate from the HyperIndex GraphQL token. Missing configuration and provider outages return an unavailable state. The new code must be deployed to the host before the action is available there. No new contract or mainnet transaction is required to inspect an already paid reward. Testnet reward evidence and arbitrary tokens are not supported by this mainnet-only verifier.
+
+Run `cd modules && npm test` for native and ERC-20 success/mismatch, index lag, reorg, duplicate-event and transport-failure coverage. Tests use fixtures and do not establish a public CHOG payout. Existing public transaction evidence below remains historical evidence; the new HyperSync path needs a configured-token live check before it can be described as production verified.
+
+For a read-only live check, configure `ENVIO_HYPERSYNC_TOKEN` in your local process, then run `cd modules && node check-reward.mjs`. It checks the historical MON payout in `submission/mon-reward.json`, and never signs or sends a transaction. Optionally pass the path to another JSON file with the same fields and a `tokenAddress` for a CHOG reward. Nonzero exit means verification did not pass; local fixture tests are not a replacement for this check.
 
 The host's existing Claim endpoint validates eligibility and reserves the mission budget. The server selects its existing encrypted Treasury wallet and persists signed transaction bytes before broadcasting. Uncertain RPC results retain the same bytes/hash/nonce for recovery. Accounting marks payment complete only after canonical finality verification.
 
