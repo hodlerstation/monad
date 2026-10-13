@@ -32,8 +32,30 @@ function Bridge({
   const userInitialized = useRef(sessionReady);
   const reset = useRef({ blocked: false, settled: false, sequence: 0 });
   const [revision, setRevision] = useState(0);
-  const latest = useRef({ primaryWallet, userId, sessionReady });
-  latest.current = { primaryWallet, userId, sessionReady };
+  const mounted = useRef(true);
+  const identity =
+    (primaryWallet?.id ?? '') + ':' + (primaryWallet?.address ?? '');
+  const latest = useRef({
+    primaryWallet,
+    userId,
+    sessionReady,
+    identity,
+    version: 0,
+  });
+  const previous = latest.current;
+  latest.current = {
+    primaryWallet,
+    userId,
+    sessionReady,
+    identity,
+    version:
+      previous.version +
+      (previous.identity !== identity ||
+      previous.userId !== userId ||
+      previous.sessionReady !== sessionReady
+        ? 1
+        : 0),
+  };
   useDynamicEvents('authFlowCancelled', walletProviderBridge.cancel);
   useDynamicEvents('authFailure', (_method, reason) => {
     if (typeof reason === 'string') walletProviderBridge.cancel();
@@ -98,10 +120,13 @@ function Bridge({
           throw Object.assign(new Error('EVM wallet unavailable'), {
             code: 4900,
           });
+        const version = latest.current.version;
         const client = await wallet.getWalletClient();
         const current = latest.current;
         // A client lookup may finish after app logout or an SDK account switch.
         if (
+          !mounted.current ||
+          current.version !== version ||
           reset.current.blocked ||
           !current.sessionReady ||
           current.userId !== userId ||
@@ -133,13 +158,14 @@ function Bridge({
     handleLogOut,
     walletProviderBridge,
   ]);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
       reset.current.sequence++;
       walletProviderBridge.update(undefined);
-    },
-    [walletProviderBridge],
-  );
+    };
+  }, [walletProviderBridge]);
   return null;
 }
 
