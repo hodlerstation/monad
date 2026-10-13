@@ -59,3 +59,20 @@ Dynamic real-wallet Sandbox authentication and message signing were checked sepa
 The reward display and Monad explorer link were checked on the deployed product. Post-deployment checks passed 14 live API/network-visibility cases and 9 local-verifier cases against public Monad RPC and the hosted Envio indexer. Concurrent repeat claims retained one finalized 0.0001 MON payout. This recheck reused the completed mission; it did not create another payout.
 
 Real MetaMask checks also verified message signing, BSC-to-Monad network switching, persistence after reload, and user-rejected signing. Dynamic connect-only mode is independent of the host login. Account linking and public CHOG reward payouts are not claimed.
+
+## Reproducibility, authorship and licensing
+
+**Scope:** this is a runnable indexer plus testable integration modules, not a standalone clone of the complete mission application. A fresh clone cannot reproduce mission creation through production Claim without the private host. Do not interpret module tests as that full flow. See [source boundaries and dated changes](submission/SOURCE_PROVENANCE.md).
+
+For the public modules with Node 24:
+
+```sh
+cd modules
+npm ci
+npm test
+npm run typecheck
+```
+
+[MIT LICENSE](LICENSE) covers the HodlerStation-authored source published in this repository. MIT is [OSI approved](https://opensource.org/license/mit). Private product repositories and third-party rights are excluded from this grant. See [external component sources](THIRD_PARTY_NOTICES.md) and [AI coding assistance disclosure](submission/AI_USAGE.md).
+
+[Dependency security review](submission/DEPENDENCY_SECURITY.md) records individual findings, locked repairs, compatibility tests and consumer limitations.

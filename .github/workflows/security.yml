@@ -1,0 +1,27 @@
+name: Dependency security and compatibility
+on:
+  pull_request:
+  push:
+    branches: [master, codex/submission-source-audit]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      - run: npm run codegen
+      - run: npm run typecheck
+      - run: npm audit --audit-level=low
+      - run: npm ci
+        working-directory: modules
+      - run: npm test
+        working-directory: modules
+      - run: npm run typecheck
+        working-directory: modules
+      - run: npm audit --audit-level=low
+        working-directory: modules
