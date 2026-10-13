@@ -76,3 +76,11 @@ npm run typecheck
 [MIT LICENSE](LICENSE) covers the HodlerStation-authored source published in this repository. MIT is [OSI approved](https://opensource.org/license/mit). Private product repositories and third-party rights are excluded from this grant. See [external component sources](THIRD_PARTY_NOTICES.md) and [AI coding assistance disclosure](submission/AI_USAGE.md).
 
 [Dependency security review](submission/DEPENDENCY_SECURITY.md) records individual findings, locked repairs, compatibility tests and consumer limitations.
+
+## Indexer reliability
+
+Local HyperSync access requires an ENVIO_API_TOKEN in the process environment (obtain it from your Envio organisation). This is distinct from an optional GraphQL query API key sent as a Bearer token by the mission adapter; never use the HyperSync credential as the GraphQL key. Cloud manages its own data-source connection.
+
+The checked-in config supports only chain 143 and its listed Chog contract. Consumers must explicitly pass that scope to the adapter; adding a testnet or changing the contract requires corresponding indexer configuration and event tests. Scope failures and transport failures must not fall back to unconditional RPC approval.
+
+CI retains the npm lock-based build and additionally runs pnpm 10.32.0 on Linux without the pnpm lock to match Cloud dependency resolution. Check GraphQL _meta.isReady and progressBlock against sourceBlock as well as the expected event; an Active label alone is insufficient. Development deployments have a maximum 30-day lifespan and are not permanent production hosting. See [Cloud troubleshooting](https://docs.envio.dev/docs/HyperIndex/envio-cloud-troubleshooting) and [plan limits](https://docs.envio.dev/docs/HyperIndex/hosted-service-billing).

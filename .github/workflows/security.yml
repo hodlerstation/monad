@@ -15,6 +15,7 @@ jobs:
           node-version: '24'
       - run: npm ci
       - run: npm run codegen
+      - run: node --test tests/handler.test.mjs
       - run: npm run typecheck
       - run: npm audit --audit-level=low
       - run: npm ci
@@ -32,7 +33,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - run: npx --yes pnpm@10.11.0 install --frozen-lockfile
-      - run: npx --yes pnpm@10.11.0 codegen
-      - run: npx --yes pnpm@10.11.0 typecheck
-      - run: npx --yes pnpm@10.11.0 audit --audit-level=low
+      # Cloud resolves dependencies afresh instead of using the committed lock.
+      - run: rm pnpm-lock.yaml
+      - run: npx --yes pnpm@10.32.0 install --no-frozen-lockfile
+      - run: npx --yes pnpm@10.32.0 codegen
+      - run: npx --yes pnpm@10.32.0 typecheck
+      - run: npx --yes pnpm@10.32.0 audit --audit-level=low
