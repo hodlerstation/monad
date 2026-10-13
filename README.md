@@ -74,3 +74,5 @@ npm run typecheck
 ```
 
 [MIT LICENSE](LICENSE) covers the HodlerStation-authored source published in this repository. MIT is [OSI approved](https://opensource.org/license/mit). Private product repositories and third-party rights are excluded from this grant. See [external component sources](THIRD_PARTY_NOTICES.md) and [AI coding assistance disclosure](submission/AI_USAGE.md).
+
+[Dependency security review](submission/DEPENDENCY_SECURITY.md) records individual findings, locked repairs, compatibility tests and consumer limitations.

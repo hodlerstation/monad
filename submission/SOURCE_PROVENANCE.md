@@ -27,4 +27,4 @@ The live product and recorded mainnet evidence are described in the root README.
 
 ## Latest public module check (2026-10-13)
 
-Node 24.14.0: locked dependencies installed with `npm ci --ignore-scripts`; all 20 module tests and TypeScript checks passed. Tests use generated local accounts and mocked network responses; they do not run a complete live Dynamic/Envio/Claim application. The install reported 32 dependency advisories (14 moderate, 18 high), which have not been remediated or individually triaged by this documentation change. Therefore no clean security-audit result is claimed.
+Node 24.14.0: isolated `npm ci` with install scripts enabled, all 33 module tests and TypeScript checks passed. The public module audit improved from 32 affected package entries to zero; the separate indexer audit improved from 12 to zero. See [individual dependency analysis, remediation and limits](DEPENDENCY_SECURITY.md). These checks do not run a complete live Dynamic/Envio/Claim application.

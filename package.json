@@ -15,5 +15,13 @@
     "@types/node": "22.19.7",
     "solc": "0.8.37",
     "typescript": "5.9.3"
+  },
+  "overrides": {
+    "express": "4.22.3",
+    "body-parser": "1.20.6",
+    "path-to-regexp": "0.1.13",
+    "qs": "6.16.0",
+    "tmp": "0.2.7",
+    "ws@^8": "8.22.0"
   }
 }
