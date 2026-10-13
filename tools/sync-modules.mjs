@@ -11,6 +11,7 @@ const files = {
     'mission-event-source.ts',
     'envio-mission-event-source.ts',
     'native-transfer.ts',
+    'hypersync-reward-evidence.ts',
   ],
 }[kind];
 if (!files || !target)
