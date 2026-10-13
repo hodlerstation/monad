@@ -10,16 +10,39 @@ test('Trade handler preserves uint256, normalizes addresses and separates log in
   const hash = '0x' + 'CD'.repeat(32);
   const blockHash = '0x' + 'EF'.repeat(32);
   const tokenId = (1n << 256n) - 1n;
-  const events = [3, 4].map(logIndex => ({
-    contract: 'ChogWearables', event: 'Trade', srcAddress: contract, logIndex,
-    transaction: { hash }, block: { number: 111647729, hash: blockHash },
-    params: { account, id: tokenId, buy: logIndex === 3, quantity: 2n, amount: 3n, total: 4n },
+  const events = [3, 4].map((logIndex) => ({
+    contract: 'ChogWearables',
+    event: 'Trade',
+    srcAddress: contract,
+    logIndex,
+    transaction: { hash },
+    block: { number: 111647729, hash: blockHash },
+    params: {
+      account,
+      id: tokenId,
+      buy: logIndex === 3,
+      quantity: 2n,
+      amount: 3n,
+      total: 4n,
+    },
   }));
-  await indexer.process({chains:{143:{simulate:events}}});
-  for (const logIndex of [3,4]) {
+  await indexer.process({ chains: { 143: { simulate: events } } });
+  for (const logIndex of [3, 4]) {
     const id = '143_' + hash.toLowerCase() + '_' + logIndex;
     const row = await indexer.MissionTrade.getOrThrow(id);
-    assert.deepEqual(row, {id,chainId:143,contract:contract.toLowerCase(),transactionHash:hash.toLowerCase(),blockHash:blockHash.toLowerCase(),blockNumber:'111647729',logIndex,account:account.toLowerCase(),tokenId:tokenId.toString(),buy:logIndex===3,quantity:'2'});
+    assert.deepEqual(row, {
+      id,
+      chainId: 143,
+      contract: contract.toLowerCase(),
+      transactionHash: hash.toLowerCase(),
+      blockHash: blockHash.toLowerCase(),
+      blockNumber: '111647729',
+      logIndex,
+      account: account.toLowerCase(),
+      tokenId: tokenId.toString(),
+      buy: logIndex === 3,
+      quantity: '2',
+    });
   }
-  assert.equal((await indexer.MissionTrade.getAll()).length,2);
+  assert.equal((await indexer.MissionTrade.getAll()).length, 2);
 });
