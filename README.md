@@ -82,7 +82,38 @@ This demo closes the missing public integration runner gap. It does **not**
 replace the private mission/authentication/accounting services or establish
 compliance with a requirement to publish the entire production application.
 
-**Scope:** this is a runnable indexer plus testable integration modules, not a standalone clone of the complete mission application. A fresh clone cannot reproduce mission creation through production Claim without the private host. Do not interpret module tests as that full flow. See [source boundaries and dated changes](submission/SOURCE_PROVENANCE.md).
+### Independent mission lifecycle
+
+The public reference host now reproduces signed login, administrator mission creation,
+participation, a local Trade transaction, Envio handler processing, proof approval and
+an exact native-token Claim. It runs independently of the private product:
+
+```sh
+# Linux/macOS or WSL; Node 24. Native Windows is unsupported by Envio's test runner.
+npm ci
+npm run codegen
+npm --prefix modules ci
+npm run reference:verify
+```
+
+This command starts a fresh non-forked loopback Anvil chain with chain ID 143, creates
+ephemeral accounts and local balances, starts the reference HTTP API, executes the
+complete lifecycle, and cleans up. No public-chain key, RPC or funds are accepted.
+The test uses the real registered Envio Trade handler through its test-indexer
+simulator and a local GraphQL adapter; it does not run production HyperSync ingestion.
+Dynamic browser connection/signing is exercised separately by the browser demo above;
+the automated lifecycle signs with generated viem accounts and is not a Dynamic E2E test.
+
+Sources: `modules/reference-host/host.mjs`, `modules/reference-host/api.mjs`, and
+`tests/reference-host.test.mjs`. SQLite preserves one-use challenges, sessions,
+participation and signed payout bytes. Tests reject unauthorized creation, full
+missions, missing indexing and early Claims, and verify concurrent/restarted Claims
+retain one transaction and one exact reward. This single-process local reference is
+not a production server, the private budget ledger, or a new mainnet payout.
+
+**Scope:** reviewers can reproduce this independent reference lifecycle and inspect
+the production evidence. Reproducing the complete private production application
+still requires its host source. See [source boundaries and dated changes](submission/SOURCE_PROVENANCE.md).
 
 For the public modules with Node 24:
 

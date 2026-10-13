@@ -21,9 +21,18 @@ Use `git log --date=iso-strict --format='%h %ad %s' -- modules src` and `git sho
 
 ## Reproduction boundary
 
-The public module tests and Envio indexer can be installed separately. This repository does **not** currently contain an independent mission web application, its authentication server, eligibility database, or Claim budget ledger. Module tests do not replace a full end-to-end reproduction of the private host application.
+The public browser demo and indexer can be installed separately. The newly authored
+`modules/reference-host/` supplies an independent local HTTP authentication and
+mission server with SQLite state and retry-safe local settlement. Its integration
+test reproduces admin creation through participant Claim against fresh Anvil funds
+and the real Envio handler simulator. See `npm run reference:verify` in the README.
+This reference was added on 2026-10-13; it is not extracted private host accounting.
 
-The live product and recorded mainnet evidence are described in the root README. Independent full-flow reproduction from only this repository is an unmet requirement if the organizer requires it. A standalone demonstrator would need an explicit public test host and locally funded settlement setup; it must not be represented as the private production accounting implementation.
+Dynamic browser signing and the local mission lifecycle remain separate test paths.
+The simulator is not production HyperSync ingestion. The live product and recorded
+mainnet evidence are described in the root README. This public reference does not
+publish the existing private product, nor prove compliance with an organizer rule
+requiring that entire product's source.
 
 ## Latest public module check (2026-10-13)
 
