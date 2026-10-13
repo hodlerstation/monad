@@ -5,7 +5,8 @@
   "scripts": {
     "codegen": "envio codegen",
     "dev": "envio dev",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "reference:verify": "node --experimental-transform-types --test tests/reference-host.test.mjs"
   },
   "dependencies": {
     "envio": "3.14.0"

@@ -2,7 +2,7 @@ name: Dependency security and compatibility
 on:
   pull_request:
   push:
-    branches: [master, codex/submission-source-audit]
+    branches: [master, codex/submission-source-audit, codex/public-mission-host]
 permissions:
   contents: read
 jobs:
@@ -26,6 +26,7 @@ jobs:
         working-directory: modules
       - run: npm run demo:build -- --logLevel error
         working-directory: modules
+      - run: npm run reference:verify
       - run: npm audit --audit-level=low
         working-directory: modules
   cloud-pnpm:
