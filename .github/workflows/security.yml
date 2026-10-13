@@ -25,3 +25,14 @@ jobs:
         working-directory: modules
       - run: npm audit --audit-level=low
         working-directory: modules
+  cloud-pnpm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npx --yes pnpm@10.11.0 install --frozen-lockfile
+      - run: npx --yes pnpm@10.11.0 codegen
+      - run: npx --yes pnpm@10.11.0 typecheck
+      - run: npx --yes pnpm@10.11.0 audit --audit-level=low
