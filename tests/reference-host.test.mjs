@@ -44,6 +44,7 @@ test('public reference: signed login → admin mission → join → real local T
     const config=(await readFile(join(root,'config.yaml'),'utf8')).replace('start_block: 111647728','start_block: 0');
     await writeFile(join(folder,'config.yaml'),config);
     await writeFile(join(folder,'schema.graphql'),await readFile(join(root,'schema.graphql')));
+    await writeFile(join(folder,'package.json'),JSON.stringify({type:'module'}));
     await cp(join(root,'src'),join(folder,'src'),{recursive:true});
     await symlink(join(root,'node_modules'),join(folder,'node_modules'),'junction');
     process.chdir(folder);
