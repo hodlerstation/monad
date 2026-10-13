@@ -110,4 +110,104 @@ describe('standard wallet adapter boundary', () => {
     await result;
     expect(changed).not.toHaveBeenCalled();
   });
+
+  it('shares concurrent connection requests and opens one dialog', async () => {
+    const bridge = createWalletProvider();
+    const connect = vi.fn();
+    bridge.update({ ...wallet, connect });
+    const a = bridge.provider.request({ method: 'eth_requestAccounts' }),
+      b = bridge.provider.request({ method: 'eth_requestAccounts' });
+    bridge.update({ ...wallet, address: '0x123' });
+    expect(await Promise.all([a, b])).toEqual([['0x123'], ['0x123']]);
+    expect(connect).toHaveBeenCalledTimes(1);
+  });
+  it('times out every waiter and permits retry', async () => {
+    vi.useFakeTimers();
+    try {
+      const bridge = createWalletProvider();
+      bridge.update(wallet);
+      const request = bridge.provider.request({
+        method: 'eth_requestAccounts',
+      });
+      const check = expect(request).rejects.toMatchObject({ code: 4900 });
+      await vi.advanceTimersByTimeAsync(120000);
+      await check;
+      const retry = bridge.provider.request({ method: 'eth_requestAccounts' });
+      bridge.update({ ...wallet, address: '0x123' });
+      expect(await retry).toEqual(['0x123']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it.each(['personal_sign', 'eth_signTypedData_v4'])(
+    'rejects stale %s after account replacement',
+    async (method) => {
+      const bridge = createWalletProvider();
+      let resolve!: (value: unknown) => void;
+      bridge.update({
+        ...wallet,
+        address: '0x123',
+        request: () =>
+          new Promise((done) => {
+            resolve = done;
+          }),
+      });
+      const request = bridge.provider.request({ method } as never);
+      bridge.update({ ...wallet, address: '0x456' });
+      resolve('signature');
+      await expect(request).rejects.toMatchObject({ code: 4100 });
+    },
+  );
+  it('preserves an already-broadcast transaction hash after an account change', async () => {
+    const bridge = createWalletProvider();
+    let resolve!: (value: unknown) => void;
+    bridge.update({
+      ...wallet,
+      address: '0x123',
+      request: () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    });
+    const request = bridge.provider.request({
+      method: 'eth_sendTransaction',
+      params: [],
+    } as never);
+    bridge.update(undefined);
+    resolve('0xhash');
+    expect(await request).toBe('0xhash');
+  });
+  it('clears accounts immediately while disconnect is still pending', async () => {
+    const bridge = createWalletProvider();
+    let resolve!: () => void;
+    bridge.update({
+      ...wallet,
+      address: '0x123',
+      disconnect: () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    });
+    const result = bridge.provider.request({
+      method: 'wallet_revokePermissions',
+      params: [],
+    } as never);
+    expect(await bridge.provider.request({ method: 'eth_accounts' })).toEqual(
+      [],
+    );
+    resolve();
+    await result;
+  });
+  it('normalizes valid chain IDs and suppresses duplicates and invalid values', () => {
+    const bridge = createWalletProvider();
+    const changed = vi.fn();
+    bridge.provider.on('chainChanged', changed);
+    for (const chain of ['0x08F', '0x8f', '0x0', 'wat', '-1'])
+      bridge.chainChanged(chain);
+    expect(changed).toHaveBeenCalledTimes(1);
+    expect(changed).toHaveBeenCalledWith('0x8f');
+    bridge.provider.removeListener('chainChanged', changed);
+    bridge.chainChanged('0x38');
+    expect(changed).toHaveBeenCalledTimes(1);
+  });
 });
