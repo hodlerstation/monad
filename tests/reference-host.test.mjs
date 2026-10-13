@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, basename } from 'node:path';
 import { createRequire } from 'node:module';
@@ -21,6 +22,7 @@ test('public reference: signed login → admin mission → join → real local T
   const rpcUrl=`http://127.0.0.1:${port}`;
   const anvil=spawn(process.execPath,[new URL('../node_modules/@foundry-rs/anvil/bin.mjs',import.meta.url).pathname.replace(/^\/([A-Z]:)/,'$1'),'--host','127.0.0.1','--port',String(port),'--chain-id','143','--silent'],{stdio:'ignore',windowsHide:true});
   const folder=await mkdtemp(join(tmpdir(),'hodler-reference-'));
+  const originalCwd=process.cwd();
   let host,api,gateway;
   try {
     const chain=defineChain({id:143,name:'Local Anvil ONLY',nativeCurrency:{name:'Local MON',symbol:'MON',decimals:18},rpcUrls:{default:{http:[rpcUrl]}}});
@@ -37,6 +39,12 @@ test('public reference: signed login → admin mission → join → real local T
     // Only this fresh local chain receives the minimal test contract runtime.
     const contract='0x43dd6ba111b09e2ee318666b82ea279dd290ba89';
     await rpc.request({method:'anvil_setCode',params:[contract,await rpc.getCode({address:deployed.contractAddress})]});
+    // Load an isolated local-start config; never alter the production config on disk.
+    const root=fileURLToPath(new URL('../',import.meta.url));
+    const config=(await readFile(join(root,'config.yaml'),'utf8')).replace('start_block: 111647728','start_block: 0').replace('handlers: src','handlers: '+JSON.stringify(join(root,'src')));
+    await writeFile(join(folder,'config.yaml'),config);
+    await writeFile(join(folder,'schema.graphql'),await readFile(join(root,'schema.graphql')));
+    process.chdir(folder);
     const indexer=createTestIndexer();
     gateway=createServer(async(req,res)=>{try{let raw='';for await(const c of req)raw+=c;const {variables}=JSON.parse(raw);const row=await indexer.MissionTrade.get(variables.id);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:{MissionTrade:row?[row]:[]}}));}catch{res.statusCode=500;res.end('{}');}});
     await new Promise(r=>gateway.listen(0,'127.0.0.1',r));
@@ -81,5 +89,5 @@ test('public reference: signed login → admin mission → join → real local T
     assert.equal(replay.hash,paymentHash);assert.equal(replay.idempotent,true);
     assert.equal(await rpc.getBalance({address:participant.address})-before,100000000000000n);
     console.log(JSON.stringify({mode:'LOCAL_ANVIL_WITH_REAL_ENVIO_HANDLER_SIMULATOR',login:true,mission:true,join:true,indexRequired:true,claim:'FINALIZED',exactLocalReward:'0.0001',restartIdempotency:true,publicFundsUsed:false}));
-  }finally{if(api)await api.close();host?.close();if(gateway)await new Promise(r=>gateway.close(r));anvil.kill();if(dirname(resolve(folder))!==resolve(tmpdir()) || !basename(folder).startsWith('hodler-reference-'))throw new Error('UNSAFE_CLEANUP_PATH');await rm(folder,{recursive:true,force:true});}
+  }finally{process.chdir(originalCwd);if(api)await api.close();host?.close();if(gateway)await new Promise(r=>gateway.close(r));anvil.kill();if(dirname(resolve(folder))!==resolve(tmpdir()) || !basename(folder).startsWith('hodler-reference-'))throw new Error('UNSAFE_CLEANUP_PATH');await rm(folder,{recursive:true,force:true});}
 });
