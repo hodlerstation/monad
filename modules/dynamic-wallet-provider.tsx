@@ -160,9 +160,10 @@ function Bridge({
   ]);
   useEffect(() => {
     mounted.current = true;
+    const resetState = reset.current;
     return () => {
       mounted.current = false;
-      reset.current.sequence++;
+      resetState.sequence++;
       walletProviderBridge.update(undefined);
     };
   }, [walletProviderBridge]);
