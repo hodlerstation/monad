@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
-import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, readFile, writeFile, cp, symlink } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname, basename } from 'node:path';
@@ -41,9 +41,11 @@ test('public reference: signed login → admin mission → join → real local T
     await rpc.request({method:'anvil_setCode',params:[contract,await rpc.getCode({address:deployed.contractAddress})]});
     // Load an isolated local-start config; never alter the production config on disk.
     const root=fileURLToPath(new URL('../',import.meta.url));
-    const config=(await readFile(join(root,'config.yaml'),'utf8')).replace('start_block: 111647728','start_block: 0').replace('handlers: src','handlers: '+JSON.stringify(join(root,'src')));
+    const config=(await readFile(join(root,'config.yaml'),'utf8')).replace('start_block: 111647728','start_block: 0');
     await writeFile(join(folder,'config.yaml'),config);
     await writeFile(join(folder,'schema.graphql'),await readFile(join(root,'schema.graphql')));
+    await cp(join(root,'src'),join(folder,'src'),{recursive:true});
+    await symlink(join(root,'node_modules'),join(folder,'node_modules'),'junction');
     process.chdir(folder);
     const indexer=createTestIndexer();
     gateway=createServer(async(req,res)=>{try{let raw='';for await(const c of req)raw+=c;const {variables}=JSON.parse(raw);const row=await indexer.MissionTrade.get(variables.id);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:{MissionTrade:row?[row]:[]}}));}catch{res.statusCode=500;res.end('{}');}});
