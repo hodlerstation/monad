@@ -58,6 +58,8 @@ test('public reference: signed login → admin mission → join → real local T
     assert.equal((await call('/join',{id:mission.id},adminSession.token)).error,'MISSION_FULL');
     const hash=await wallet.writeContract({address:contract,abi:compiled.abi,functionName:'buy',args:[7n]});
     const receipt=await rpc.waitForTransactionReceipt({hash});
+    // Anvil's finalized tag trails its head; advance only the disposable local chain.
+    await rpc.request({method:'anvil_mine',params:['0x40']});
     assert.equal((await call('/complete',{id:mission.id,hash},user.token)).error,'INDEXING_PENDING');
     const block=await rpc.getBlock({blockNumber:receipt.blockNumber});
     const log=receipt.logs[0];const args=decodeEventLog({abi:parseAbi(['event Trade(address indexed account,uint256 indexed id,bool buy,uint256 quantity,uint256 amount,uint256 total)']),data:log.data,topics:log.topics}).args;
@@ -65,6 +67,7 @@ test('public reference: signed login → admin mission → join → real local T
     assert.equal((await call('/complete',{id:mission.id,hash},user.token)).approved,true);
     const before=await rpc.getBalance({address:participant.address});
     let claims=await Promise.all([call('/claim',{id:mission.id},user.token),call('/claim',{id:mission.id},user.token)]);
+    await rpc.request({method:'anvil_mine',params:['0x40']});
     for(let i=0;i<10 && !claims.some(x=>x.state==='FINALIZED');i++) {await new Promise(r=>setTimeout(r,100));claims.push(await call('/claim',{id:mission.id},user.token));}
     assert.ok(claims.some(x=>x.state==='FINALIZED'),JSON.stringify(claims));
     assert.equal(new Set(claims.map(x=>x.hash)).size,1);
