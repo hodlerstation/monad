@@ -5,7 +5,7 @@ import { createServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve, dirname, basename } from 'node:path';
 import { createRequire } from 'node:module';
 import solc from 'solc';
 import { createTestIndexer } from 'envio';
@@ -75,5 +75,5 @@ test('public reference: signed login → admin mission → join → real local T
     assert.equal(replay.hash,paymentHash);assert.equal(replay.idempotent,true);
     assert.equal(await rpc.getBalance({address:participant.address})-before,100000000000000n);
     console.log(JSON.stringify({mode:'LOCAL_ANVIL_WITH_REAL_ENVIO_HANDLER_SIMULATOR',login:true,mission:true,join:true,indexRequired:true,claim:'FINALIZED',exactLocalReward:'0.0001',restartIdempotency:true,publicFundsUsed:false}));
-  }finally{if(api)await api.close();host?.close();if(gateway)await new Promise(r=>gateway.close(r));anvil.kill();await rm(folder,{recursive:true,force:true});}
+  }finally{if(api)await api.close();host?.close();if(gateway)await new Promise(r=>gateway.close(r));anvil.kill();if(dirname(resolve(folder))!==resolve(tmpdir()) || !basename(folder).startsWith('hodler-reference-'))throw new Error('UNSAFE_CLEANUP_PATH');await rm(folder,{recursive:true,force:true});}
 });

@@ -48,6 +48,7 @@ export class ReferenceHost {
     return {token,address:c.address};
   }
   user(token) {
+    if (typeof token !== 'string' || !/^[0-9a-f]{64}$/.test(token)) throw new Error('UNAUTHENTICATED');
     const row = this.db.prepare('SELECT * FROM sessions WHERE id=?').get(token);
     if (!row || row.expires < Date.now()) throw new Error('UNAUTHENTICATED');
     return row.address;
