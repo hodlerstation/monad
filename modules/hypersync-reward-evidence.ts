@@ -61,9 +61,12 @@ export async function verifyHyperSyncReward(
     const body = JSON.parse(new TextDecoder().decode(bytes));
     if (!Number.isSafeInteger(body.next_block)) return 'unavailable';
     if (body.next_block <= reward.blockNumber) return 'pending';
-    const blocks = rows(body.data?.blocks);
-    const transactions = rows(body.data?.transactions);
-    const logs = rows(body.data?.logs);
+    const batches = rows(Array.isArray(body.data) ? body.data : [body.data]);
+    const collect = (key: string) => batches.flatMap(batch =>
+      batch[key] === undefined ? [] : rows(batch[key]));
+    const blocks = collect('blocks');
+    const transactions = collect('transactions');
+    const logs = collect('logs');
     const block = blocks.filter(b => integer(b.number) === BigInt(reward.blockNumber));
     if (block.length !== 1 || !eq(block[0].hash, reward.blockHash)) return 'mismatch';
     const matches = transactions.filter(tx => eq(tx.hash, reward.signature!));

@@ -68,3 +68,10 @@ it('fails closed on provider failure, malformed JSON and malformed rows', async 
   expect(await verifyHyperSyncReward(base,'token',vi.fn<typeof fetch>().mockRejectedValue(Error('timeout')))).toBe('unavailable');
   expect(await verifyHyperSyncReward(base,'token',vi.fn<typeof fetch>().mockResolvedValue(new Response('',{status:401})))).toBe('unavailable');
 });
+
+it.each(['MON','CHOG'])('accepts live JSON response batches for %s', async asset => {
+ const reward = {...base, ...(asset === 'CHOG' ? {tokenAddress:'0x350035555E10d9AfAF1566AaebfCeD5BA6C27777' as const} : {})};
+ const body=fixture(reward);
+ const {logs,...withoutLogs}=body.data;
+ expect(await verifyHyperSyncReward(reward,'token',request({...body,data:asset==='CHOG' ? [withoutLogs,{logs}] : [withoutLogs]}))).toBe('verified');
+});
