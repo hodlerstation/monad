@@ -24,6 +24,7 @@ describe.each(['MON', 'CHOG'])('%s indexed reward', asset => {
   it('verifies exact units and queries only the finalized block', async () => {
     const fetch = request(fixture(reward));
     expect(await verifyHyperSyncReward(reward, 'token', fetch)).toBe('verified');
+    expect(fetch.mock.calls[0][0]).toBe('https://143.hypersync.xyz/query');
     const query = JSON.parse(fetch.mock.calls[0][1]!.body as string);
     expect(query.from_block).toBe(123); expect(query.to_block).toBe(124);
     expect(query.transactions[0].to).toEqual([reward.tokenAddress ?? receiver]);

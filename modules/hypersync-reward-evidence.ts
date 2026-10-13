@@ -29,7 +29,7 @@ export async function verifyHyperSyncReward(
       !/^0x[0-9a-f]{64}$/i.test(reward.signature ?? '') || !/^0x[0-9a-f]{64}$/i.test(reward.blockHash) ||
       !/^0x[0-9a-f]{40}$/i.test(reward.senderAddress ?? '') || !/^0x[0-9a-f]{40}$/i.test(reward.recipientAddress) || reward.amountRaw <= 0n) return 'mismatch';
   try {
-    const response = await request('https://monad.hypersync.xyz/query', {
+    const response = await request('https://143.hypersync.xyz/query', {
       method: 'POST', redirect: 'error', signal: AbortSignal.timeout(8000),
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token.trim()}` },
       body: JSON.stringify({
