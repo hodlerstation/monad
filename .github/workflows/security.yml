@@ -24,6 +24,8 @@ jobs:
         working-directory: modules
       - run: npm run typecheck
         working-directory: modules
+      - run: npm run demo:build -- --logLevel error
+        working-directory: modules
       - run: npm audit --audit-level=low
         working-directory: modules
   cloud-pnpm:

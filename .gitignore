@@ -2,3 +2,4 @@ node_modules/
 .envio/
 .env
 .env.*
+modules/demo-dist/

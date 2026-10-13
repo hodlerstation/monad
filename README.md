@@ -62,6 +62,26 @@ Real MetaMask checks also verified message signing, BSC-to-Monad network switchi
 
 ## Reproducibility, authorship and licensing
 
+### Public browser demo
+
+With Node 24, run `cd modules`, `npm ci`, then `npm run demo`. Open
+`http://localhost:5173`. Use your own public Dynamic environment ID and allow
+this origin in that environment. Never enter a private key or server token.
+Connect an external wallet, optionally switch to Monad and sign the clearly
+labelled verification message. Rejecting the signature produces an error, not a pass.
+The demo uses the same public Dynamic/EIP-1193 modules as the host application.
+
+The evidence button works independently of wallet connection. It queries public
+Monad RPC, checks canonical/finalized Trade evidence, requires the exact Envio
+record, and verifies the recorded native MON payment. It does not authorize a
+new participant, create a mission, or send funds. RPC/GraphQL CORS and service
+availability are necessary for browser replay. `npm run demo:build` creates a
+static build in `modules/demo-dist`; `npm test` includes failure-path replay tests.
+
+This demo closes the missing public integration runner gap. It does **not**
+replace the private mission/authentication/accounting services or establish
+compliance with a requirement to publish the entire production application.
+
 **Scope:** this is a runnable indexer plus testable integration modules, not a standalone clone of the complete mission application. A fresh clone cannot reproduce mission creation through production Claim without the private host. Do not interpret module tests as that full flow. See [source boundaries and dated changes](submission/SOURCE_PROVENANCE.md).
 
 For the public modules with Node 24:
