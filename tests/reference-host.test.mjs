@@ -33,7 +33,10 @@ test('public reference: signed login → admin mission → join → real local T
     const source='pragma solidity ^0.8.20; contract Market {event Trade(address indexed account,uint256 indexed id,bool buy,uint256 quantity,uint256 amount,uint256 total); function buy(uint256 id) external {emit Trade(msg.sender,id,true,1,1,1);} }';
     const compiled=JSON.parse(solc.compile(JSON.stringify({language:'Solidity',sources:{'Market.sol':{content:source}},settings:{outputSelection:{'*':{'*':['abi','evm.bytecode.object']}}}}))).contracts['Market.sol'].Market;
     const deployed=await rpc.waitForTransactionReceipt({hash:await adminWallet.deployContract({abi:compiled.abi,bytecode:'0x'+compiled.evm.bytecode.object})});
-    const contract=deployed.contractAddress.toLowerCase();
+    // Keep the configured contract address so the real handler's address filter applies.
+    // Only this fresh local chain receives the minimal test contract runtime.
+    const contract='0x43dd6ba111b09e2ee318666b82ea279dd290ba89';
+    await rpc.request({method:'anvil_setCode',params:[contract,await rpc.getCode({address:deployed.contractAddress})]});
     const indexer=createTestIndexer();
     gateway=createServer(async(req,res)=>{try{let raw='';for await(const c of req)raw+=c;const {variables}=JSON.parse(raw);const row=await indexer.MissionTrade.get(variables.id);res.setHeader('Content-Type','application/json');res.end(JSON.stringify({data:{MissionTrade:row?[row]:[]}}));}catch{res.statusCode=500;res.end('{}');}});
     await new Promise(r=>gateway.listen(0,'127.0.0.1',r));
